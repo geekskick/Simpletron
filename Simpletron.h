@@ -7,7 +7,7 @@
 
 
 #include <cstdint>
-#include <vector>
+#include <array>
 
 
 class Simpletron
@@ -34,12 +34,13 @@ public:
 	~Simpletron( void ) {}
 	void loadProgramIntoMemory( int *program );
 	void disassembleProgram( void );
+	void dump(void);
 
 private:
-	static const int PROG_MEM_SIZE;
-	static const int RAM_SIZE;
-	std::vector<uint32_t> programMemory;
-	std::vector<int32_t> ram;
+	static constexpr int PROG_MEM_SIZE 		= 100;
+	static constexpr int RAM_SIZE			= 100;
+	std::array<uint32_t, PROG_MEM_SIZE> programMemory;
+	std::array<int32_t, RAM_SIZE> ram;
 	int32_t accumulator;
 	int programCounter;
 

@@ -11,5 +11,6 @@ int main( )
 	Simpletron s;
 	s.loadProgramIntoMemory(program);
 	s.disassembleProgram();
+	s.dump();
 	return 0;
 }

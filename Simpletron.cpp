@@ -7,9 +7,6 @@
 #include <cmath>
 #include <iostream>
 
-const int Simpletron::PROG_MEM_SIZE = 100; 	/*! @var The number of instructions the Simpletron can store !*/
-const int Simpletron::RAM_SIZE 		= 100; 	/*! @var The amount of RAM available !*/
-
 /*!
  * @brief Copies the contents of the program into the Simpletron's own memory.
  * Passing an array of any maximum size will tke up loads of memory, so instead passing the address of it is used
@@ -38,13 +35,15 @@ void Simpletron::loadProgramIntoMemory( int *program )
 void Simpletron::disassembleProgram( void )
 {
 
+	uint32_t inst;
+
 	do
 	{
 		/// Print the location in the program memory
 		std::cout << programCounter << " : (" << programMemory[programCounter] << ") ";
 
 		/// FETCH
-		uint32_t inst = programMemory[programCounter++];
+		inst = programMemory[programCounter++];
 
 		/// DECODE
 		int addr = getAddressFromInstruction(inst);
@@ -53,7 +52,7 @@ void Simpletron::disassembleProgram( void )
 		/// EXECUTE
 		switch( op )
 		{
-			case READ: 	std::cout << "READ into " 		<< addr						<< std::endl;
+			case READ: 	std::cout << "READ into " 		<< addr						<< std::endl << "> ";
 						std::cin >> ram[addr];
 				break;
 			case WRITE: std::cout << "WRITE thing in " 	<< addr << " to CONSOLE" 	<< std::endl;
@@ -94,7 +93,7 @@ void Simpletron::disassembleProgram( void )
 						std::cout << op << " was an invalid opcode" 				<< std::endl; break;
 		}
 
-	}while( !instructionIsHalt(programMemory[programCounter]) );
+	}while( !instructionIsHalt(inst) );
 
 }
 
@@ -102,10 +101,10 @@ void Simpletron::disassembleProgram( void )
  * @brief Constructor
  */
 Simpletron::Simpletron( void )
-: programCounter( 0 ),
-  programMemory( PROG_MEM_SIZE, 0 ),
-  ram( RAM_SIZE, 0 ) 				// initialise the memory to the correct length and filled with 0's
+: programCounter( 0 )
 {
+	programMemory.fill(0);
+	ram.fill(0);
 }
 
 /*!
@@ -138,6 +137,27 @@ int Simpletron::getAddressFromInstruction( uint32_t instruction )
 {
 	// The address is stored as the lower two digit of a decimal number aka the modulus
 	return ( instruction % 100 );
+}
+
+/**
+ * @brief      Dump the ram and progmem to stdout
+ */
+void Simpletron::dump(void)
+{
+	int i = 0;
+	std::cout << "Register Dump:" << std::endl;
+	for(auto const & r: ram)
+	{
+		std::cout << "\t" << std::dec << i++ <<":\t" << std::hex << r << std::endl;
+	}
+
+	i = 0;
+	std::cout << "ProgMem Dump:" << std::dec << std::endl;
+	for(auto const &p: programMemory)
+	{
+		std::cout << "\t" << i++ <<":\t" << p << std::endl;
+	}
+
 }
 
 
