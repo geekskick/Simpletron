@@ -111,8 +111,7 @@ void Simpletron::disassembleProgram( void )
 						accumulator = ram[++ram[STACK_POINTER_LOC]];
 				break;
 			case CALL:  if(debug){ std::cout << "CALL subroutine at " << accumulator 			<< std::endl; }
-						ram[ram[STACK_POINTER_LOC]] = programCounter;
-						ram[STACK_POINTER_LOC]--;
+						ram[ram[STACK_POINTER_LOC]--] = programCounter;
 						programCounter = accumulator;
 				break;
 			case RET:	if(debug){ std::cout << "RETurn from subroutine to " << ram[ram[STACK_POINTER_LOC]+1] << std::endl;}
