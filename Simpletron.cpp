@@ -19,6 +19,11 @@ void Simpletron::loadProgramIntoMemory( int *program )
 	/// If the program is just a HALT command dont bother copying
 	if( getOpcodeFromInstruction( (uint32_t)program[loadLocation] )== (int)HALT ) { return; }
 
+	programMemory.fill(0);
+	ram.fill(0);
+	ram[STACK_POINTER_LOC] = STACK_POINTER_LOC - 1;
+	programCounter = 0;
+
 	/// Assumes that the last instruction will be HALT
 	do
 	{
@@ -40,7 +45,7 @@ void Simpletron::disassembleProgram( void )
 	do
 	{
 		/// Print the location in the program memory
-		std::cout << programCounter << " : (" << programMemory[programCounter] << ") ";
+		//std::cout << programCounter << " : (" << programMemory[programCounter] << ") ";
 
 		/// FETCH
 		inst = programMemory[programCounter++];
@@ -55,39 +60,66 @@ void Simpletron::disassembleProgram( void )
 			case READ: 	std::cout << "READ into " 		<< addr						<< std::endl << "> ";
 						std::cin >> ram[addr];
 				break;
-			case WRITE: std::cout << "WRITE thing in " 	<< addr << " to CONSOLE" 	<< std::endl;
-						std::cout << ram[addr] << std::endl;
+			case WRITE: if(debug){ std::cout << "WRITE thing in " 	<< addr << " to CONSOLE" 	<< std::endl; }
+						std::cout << ((char)ram[addr]); //<< std::endl;
 				break;
-			case LOAD: 	std::cout << "LOAD thing in " 	<< addr << " into Acc "		<< std::endl;
+			case WRITEA:if(debug){ std::cout << "WRITE thing in Acc to CONSOLE" 				<< std::endl;}
+						std::cout << (char)accumulator;// << std::endl;
+				break;
+			case LOAD: 	if(debug){ std::cout << "LOAD thing in " 	<< addr << " into Acc "		<< std::endl;}
 						accumulator = ram[addr];
 				break;
-			case STORE: std::cout << "STORE Acc into " 	<< addr 					<< std::endl;
+			case LOADL: if(debug){ std::cout << "LOAD Literal  " 	<< addr << " into Acc "		<< std::endl;}
+						accumulator = addr;
+				break;
+			case LOADA: if(debug){ std::cout << "LOAD thing in " << accumulator << " into Acc "	<< std::endl;}
+						accumulator = ram[accumulator];
+				break;
+			case STORE: if(debug){ std::cout << "STORE Acc into " 	<< addr 					<< std::endl;}
 						ram[addr] = accumulator;
 				break;
-			case MUL: 	std::cout << "MUL by thing in " << addr 					<< std::endl;
+			case MUL: 	if(debug){ std::cout << "MUL by thing in " << addr 					<< std::endl;}
 						accumulator *= ram[addr];
 				break;
-			case DIV: 	std::cout << "DIV by thing in " << addr 					<< std::endl;
+			case DIV: 	if(debug){ std::cout << "DIV by thing in " << addr 					<< std::endl;}
 						accumulator /= ram[addr];
 				break;
-			case ADD: 	std::cout << "ADD thing in " 	<< addr 					<< std::endl;
+			case ADD: 	if(debug){ std::cout << "ADD thing in " 	<< addr 					<< std::endl;}
 						accumulator += ram[addr];
 				break;
-			case SUB: 	std::cout << "SUB thing in " 	<< addr 					<< std::endl;
+			case SUB: 	if(debug){ std::cout << "SUB thing in " 	<< addr 					<< std::endl;}
 						accumulator -= ram[addr];
 				break;
-			case BRANCH:std::cout << "BRANCH to " 		<< addr 					<< std::endl;
+			case BRANCH:if(debug){ std::cout << "BRANCH to " 		<< addr 					<< std::endl;}
 						programCounter = addr;
 				break;
 			case BRANCH_IFNEG:
-						std::cout << "BRANCH IFNEG to " << addr 					<< std::endl;
+						if(debug){ std::cout << "BRANCH IFNEG to " << addr 					<< std::endl;}
 						programCounter = accumulator < 0 ? addr : programCounter ;
 				break;
 			case BRANCH_IFZERO:
-						std::cout << "BRANCH IFZERO to " << addr 					<< std::endl;
+						if(debug){ std::cout << "BRANCH IFZERO to " << addr 					<< std::endl;}
 						programCounter = accumulator == 0 ? addr : programCounter;
 				break;
-			case HALT: 	std::cout << "HALT" 										<< std::endl; break;
+			case HALT: 	std::cout << "HALT" 										<< std::endl; 
+				break;
+			case PUSH:	if(debug){ std::cout << "PUSH acc to stack " 							<< std::endl;}
+						ram[ram[STACK_POINTER_LOC]--] = accumulator; 
+				break;
+			case POP:   if(debug){ std::cout << "POP from stack into acc" 						<< std::endl;}
+						if(ram[STACK_POINTER_LOC] + 1 == STACK_POINTER_LOC) { break; }
+						accumulator = ram[++ram[STACK_POINTER_LOC]];
+				break;
+			case CALL:  if(debug){ std::cout << "CALL subroutine at " << accumulator 			<< std::endl; }
+						ram[ram[STACK_POINTER_LOC]] = programCounter;
+						ram[STACK_POINTER_LOC]--;
+						programCounter = accumulator;
+				break;
+			case RET:	if(debug){ std::cout << "RETurn from subroutine to " << ram[ram[STACK_POINTER_LOC]+1] << std::endl;}
+						programCounter = ram[++ram[STACK_POINTER_LOC]];
+				break;
+			case DUMP:	if(debug){ dump();}
+				break;
 
 			default:
 						std::cout << op << " was an invalid opcode" 				<< std::endl; break;
@@ -100,11 +132,14 @@ void Simpletron::disassembleProgram( void )
 /*!
  * @brief Constructor
  */
-Simpletron::Simpletron( void )
-: programCounter( 0 )
+
+Simpletron::Simpletron( bool debug )
+: programCounter( 0 ),
+  debug(debug)
 {
 	programMemory.fill(0);
 	ram.fill(0);
+	ram[STACK_POINTER_LOC] = STACK_POINTER_LOC - 1;
 }
 
 /*!
@@ -157,6 +192,9 @@ void Simpletron::dump(void)
 	{
 		std::cout << "\t" << i++ <<":\t" << p << std::endl;
 	}
+	std::cout << "Accumulator Dump:" << std::hex << std::endl;
+	std::cout << "\t" << std::hex << accumulator << std::endl;
+	std::cout << std::dec;
 
 }
 
