@@ -45,7 +45,7 @@ void Simpletron::disassembleProgram( void )
 	do
 	{
 		/// Print the location in the program memory
-		//std::cout << programCounter << " : (" << programMemory[programCounter] << ") ";
+		if(debug){ std::cout << programCounter << " : (" << programMemory[programCounter] << ") "; }
 
 		/// FETCH
 		inst = programMemory[programCounter++];
@@ -61,10 +61,12 @@ void Simpletron::disassembleProgram( void )
 						std::cin >> ram[addr];
 				break;
 			case WRITE: if(debug){ std::cout << "WRITE thing in " 	<< addr << " to CONSOLE" 	<< std::endl; }
-						std::cout << ((char)ram[addr]); //<< std::endl;
+						std::cout << std::to_string(ram[addr]);
+						if(debug){ std::cout << std::endl; }
 				break;
 			case WRITEA:if(debug){ std::cout << "WRITE thing in Acc to CONSOLE" 				<< std::endl;}
-						std::cout << (char)accumulator;// << std::endl;
+						std::cout << std::to_string(accumulator);
+						if(debug){ std::cout << std::endl; }
 				break;
 			case LOAD: 	if(debug){ std::cout << "LOAD thing in " 	<< addr << " into Acc "		<< std::endl;}
 						accumulator = ram[addr];
