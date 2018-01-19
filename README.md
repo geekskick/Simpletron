@@ -29,16 +29,23 @@ However I have also added in a stack which grows up from the bottom of the memor
 The project uses cmake, so to make use:
 
 ```bash
-> cmake
+> mkdir build
+> cd build
+> cmake ..
 > make
+```
+
+To run tests:
+```bash 
+> ./tests/simpletron_test
 ```
 
 To run as normal:
 ```bash
-> ./Simpletron
+> ./src/simpletron
 ```
 
 To enable debug messages run with debug as the argument
 ```bash
-> ./Simpletron debug 
+> ./src/simpletron debug 
 ```
