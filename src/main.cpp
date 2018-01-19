@@ -94,5 +94,6 @@ int main(const int argc, const char **argv)
 
 	s.loadProgramIntoMemory(printTest);
 	s.disassembleProgram();
+
 	return 0;
 }
