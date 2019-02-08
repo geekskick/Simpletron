@@ -37,7 +37,7 @@ The project uses cmake, so to make use:
 
 To run tests:
 ```bash 
-> ./tests/simpletron_test
+make test
 ```
 
 To run as normal:
